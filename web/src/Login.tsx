@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       const { data } = await api.login({
         userName: String(form.get('userName')),
-        passWord: String(form.get('passWord')),
+        password: String(form.get('password')),
       })
       if (data?.token) {
         setToken(data.token)
@@ -52,8 +52,8 @@ export default function LoginPage() {
       const { data } = await api.register({
         userName: String(form.get('userName')),
         nickName: String(form.get('nickName')),
-        passWord: String(form.get('passWord')),
-        phonenumber: String(form.get('phonenumber')),
+        password: String(form.get('password')),
+        phoneNumber: String(form.get('phoneNumber')),
         sex: String(form.get('sex') || '0'),
       })
       if (data?.code === 200) {
@@ -79,7 +79,7 @@ export default function LoginPage() {
     try {
       const { data } = await api.phoneLogin({
         phone: String(form.get('phone')),
-        SMSCode: String(form.get('SMSCode')),
+        smsCode: String(form.get('smsCode')),
       })
       if (data?.token) {
         setToken(data.token)
@@ -156,7 +156,7 @@ export default function LoginPage() {
         {type === 'login' && (
           <form className="login-form" onSubmit={handleLogin}>
             <input name="userName" placeholder="用户名" defaultValue="test01" required />
-            <input name="passWord" type="password" placeholder="密码" defaultValue="123456" required />
+            <input name="password" type="password" placeholder="密码" defaultValue="123456" required />
             <button type="submit" disabled={loading}>
               {loading ? '登录中...' : '登录'}
             </button>
@@ -174,7 +174,7 @@ export default function LoginPage() {
             />
             <div className="sms-code-row">
               <input
-                name="SMSCode"
+                name="smsCode"
                 placeholder="短信验证码"
                 value={smsCode}
                 onChange={(e) => setSmsCode(e.target.value)}
@@ -199,8 +199,8 @@ export default function LoginPage() {
           <form className="login-form" onSubmit={handleRegister}>
             <input name="userName" placeholder="用户名" required />
             <input name="nickName" placeholder="昵称" />
-            <input name="passWord" type="password" placeholder="密码" required />
-            <input name="phonenumber" placeholder="手机号" required />
+            <input name="password" type="password" placeholder="密码" required />
+            <input name="phoneNumber" placeholder="手机号" required />
             <select name="sex">
               <option value="0">男</option>
               <option value="1">女</option>

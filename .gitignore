@@ -3,4 +3,6 @@
 /data.db
 /profile/upload/
 /docker-data/
+/node_modules/
+**/node_modules/
 ~$*.docx

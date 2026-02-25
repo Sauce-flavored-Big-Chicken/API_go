@@ -214,10 +214,18 @@ func parsePaging(c *gin.Context) (int, int) {
 
 func PhoneLogin(c *gin.Context) {
 	var req struct {
-		Phone   string `json:"phone" binding:"required"`
-		SMSCode string `json:"smsCode" binding:"required"`
+		Phone      string `json:"phone" binding:"required"`
+		SMSCode    string `json:"smsCode"`
+		LegacyCode string `json:"SMSCode"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
+		return
+	}
+	if req.SMSCode == "" {
+		req.SMSCode = req.LegacyCode
+	}
+	if req.SMSCode == "" {
 		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
 		return
 	}
@@ -248,10 +256,18 @@ func PhoneLogin(c *gin.Context) {
 
 func Login(c *gin.Context) {
 	var req struct {
-		UserName string `json:"userName" binding:"required"`
-		Password string `json:"password" binding:"required"`
+		UserName       string `json:"userName" binding:"required"`
+		Password       string `json:"password"`
+		LegacyPassword string `json:"passWord"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
+		return
+	}
+	if req.Password == "" {
+		req.Password = req.LegacyPassword
+	}
+	if req.Password == "" {
 		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
 		return
 	}
@@ -302,8 +318,10 @@ func Register(c *gin.Context) {
 		Avatar       string `json:"avatar"`
 		UserName     string `json:"userName" binding:"required"`
 		NickName     string `json:"nickName"`
-		Password     string `json:"password" binding:"required"`
-		PhoneNumber  string `json:"phoneNumber" binding:"required"`
+		Password     string `json:"password"`
+		PassWord     string `json:"passWord"`
+		PhoneNumber  string `json:"phoneNumber"`
+		Phonenumber  string `json:"phonenumber"`
 		Sex          string `json:"sex" binding:"required"`
 		Email        string `json:"email"`
 		IDCard       string `json:"idCard"`
@@ -311,6 +329,16 @@ func Register(c *gin.Context) {
 		Introduction string `json:"introduction"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
+		return
+	}
+	if req.Password == "" {
+		req.Password = req.PassWord
+	}
+	if req.PhoneNumber == "" {
+		req.PhoneNumber = req.Phonenumber
+	}
+	if req.Password == "" || req.PhoneNumber == "" {
 		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
 		return
 	}
@@ -372,6 +400,7 @@ func UpdateUserInfo(c *gin.Context) {
 		Avatar       string `json:"avatar"`
 		NickName     string `json:"nickName" binding:"required"`
 		PhoneNumber  string `json:"phoneNumber"`
+		Phonenumber  string `json:"phonenumber"`
 		Sex          string `json:"sex"`
 		Email        string `json:"email"`
 		IDCard       string `json:"idCard"`
@@ -381,6 +410,9 @@ func UpdateUserInfo(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
 		return
+	}
+	if req.PhoneNumber == "" {
+		req.PhoneNumber = req.Phonenumber
 	}
 
 	var user models.User
@@ -1311,21 +1343,26 @@ func ImageList(c *gin.Context) {
 
 func ImageDelete(c *gin.Context) {
 	urlPath := c.Query("url")
-	if urlPath == "" {
+	cleanedURL, targetPath, err := resolveDeletePath(urlPath, "image")
+	if err != nil {
 		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
 		return
 	}
-	path := "." + urlPath
-	if _, err := os.Stat(path); err != nil {
+	info, err := os.Stat(targetPath)
+	if err != nil {
 		c.JSON(http.StatusOK, Response{Code: 404, Msg: "文件不存在"})
 		return
 	}
-	if err := os.Remove(path); err != nil {
+	if info.IsDir() {
+		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
+		return
+	}
+	if err := os.Remove(targetPath); err != nil {
 		c.JSON(http.StatusOK, Response{Code: 500, Msg: "删除失败"})
 		return
 	}
 
-	thumbURL := thumbnailURLForImage(urlPath)
+	thumbURL := thumbnailURLForImage(cleanedURL)
 	if thumbURL != "" {
 		_ = os.Remove("." + thumbURL)
 	}
@@ -1429,20 +1466,53 @@ func FileList(c *gin.Context) {
 
 func FileDelete(c *gin.Context) {
 	urlPath := c.Query("url")
-	if urlPath == "" {
+	_, targetPath, err := resolveDeletePath(urlPath, "file")
+	if err != nil {
 		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
 		return
 	}
-	path := "." + urlPath
-	if _, err := os.Stat(path); err != nil {
+	info, err := os.Stat(targetPath)
+	if err != nil {
 		c.JSON(http.StatusOK, Response{Code: 404, Msg: "文件不存在"})
 		return
 	}
-	if err := os.Remove(path); err != nil {
+	if info.IsDir() {
+		c.JSON(http.StatusOK, Response{Code: 500, Msg: "参数错误"})
+		return
+	}
+	if err := os.Remove(targetPath); err != nil {
 		c.JSON(http.StatusOK, Response{Code: 500, Msg: "删除失败"})
 		return
 	}
 	c.JSON(http.StatusOK, Response{Code: 200, Msg: "删除成功"})
+}
+
+func resolveDeletePath(urlPath, kind string) (string, string, error) {
+	trimmed := strings.TrimSpace(urlPath)
+	if trimmed == "" {
+		return "", "", fmt.Errorf("empty path")
+	}
+
+	cleanedURL := filepath.ToSlash(filepath.Clean("/" + strings.TrimPrefix(trimmed, "/")))
+	basePrefix := "/profile/upload/" + kind + "/"
+	if !strings.HasPrefix(cleanedURL, basePrefix) {
+		return "", "", fmt.Errorf("invalid path")
+	}
+
+	baseDir := "." + strings.TrimSuffix(basePrefix, "/")
+	baseAbs, err := filepath.Abs(baseDir)
+	if err != nil {
+		return "", "", err
+	}
+	targetAbs, err := filepath.Abs("." + cleanedURL)
+	if err != nil {
+		return "", "", err
+	}
+	if targetAbs == baseAbs || !strings.HasPrefix(targetAbs, baseAbs+string(os.PathSeparator)) {
+		return "", "", fmt.Errorf("path traversal")
+	}
+
+	return cleanedURL, targetAbs, nil
 }
 
 func NoticeList(c *gin.Context) {

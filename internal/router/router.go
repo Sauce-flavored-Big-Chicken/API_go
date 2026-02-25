@@ -53,9 +53,9 @@ func Setup() *gin.Engine {
 		prodApi.PUT("/common/datacard/:id", middleware.AuthMiddleware("digital-community-secret-key-2024"), handlers.GreenDataCardUpdate)
 		prodApi.DELETE("/common/datacard/:id", middleware.AuthMiddleware("digital-community-secret-key-2024"), handlers.GreenDataCardDelete)
 		prodApi.GET("/common/images", handlers.ImageList)
-		prodApi.DELETE("/common/images", handlers.ImageDelete)
+		prodApi.DELETE("/common/images", middleware.AuthMiddleware("digital-community-secret-key-2024"), handlers.ImageDelete)
 		prodApi.GET("/common/files", handlers.FileList)
-		prodApi.DELETE("/common/files", handlers.FileDelete)
+		prodApi.DELETE("/common/files", middleware.AuthMiddleware("digital-community-secret-key-2024"), handlers.FileDelete)
 
 		prodApi.GET("/question/questionList/:id/:level", middleware.AuthMiddleware("digital-community-secret-key-2024"), handlers.QuestionQuestionList)
 		prodApi.POST("/question/savePaper", middleware.AuthMiddleware("digital-community-secret-key-2024"), handlers.QuestionSavePaper)

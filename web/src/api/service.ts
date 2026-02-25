@@ -3,9 +3,9 @@ import { apiClient, type ApiResponse } from './client'
 export const api = {
   logout: () => apiClient.post<ApiResponse>('/logout'),
 
-  phoneLogin: (payload: { phone: string; SMSCode: string }) =>
+  phoneLogin: (payload: { phone: string; smsCode: string }) =>
     apiClient.post<ApiResponse>('/prod-api/api/phone/login', payload),
-  login: (payload: { userName: string; passWord: string }) =>
+  login: (payload: { userName: string; password: string }) =>
     apiClient.post<ApiResponse>('/prod-api/api/login', payload),
   smsCode: (phone: string) =>
     apiClient.get<ApiResponse<string>>('/prod-api/api/smsCode', { params: { phone } }),

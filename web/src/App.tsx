@@ -494,7 +494,7 @@ function UserPage() {
               nickName: textFromForm(form, 'nickName'),
               avatar: textFromForm(form, 'avatar'),
               email: textFromForm(form, 'email'),
-              phonenumber: textFromForm(form, 'phonenumber'),
+              phoneNumber: textFromForm(form, 'phoneNumber'),
               sex: textFromForm(form, 'sex'),
               address: textFromForm(form, 'address'),
               introduction: textFromForm(form, 'introduction'),
@@ -517,7 +517,7 @@ function UserPage() {
               </div>
               <div className="form-group">
                 <label>手机号</label>
-                <input name="phonenumber" placeholder="手机号" />
+                <input name="phoneNumber" placeholder="手机号" />
               </div>
             </div>
             <div className="form-row">

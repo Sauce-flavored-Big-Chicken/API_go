@@ -387,6 +387,52 @@
 }
 ```
 
+### 2.4 用户列表
+
+| 项目 | 说明 |
+|------|------|
+| 接口地址 | `/prod-api/api/user/list` |
+| 请求方法 | GET |
+| 请求类型 | application/x-www-form-urlencoded |
+| 认证 | 需要Token |
+
+**请求参数**
+
+| 参数名 | 说明 | 必须 | 类型 | 请求类型 |
+|--------|------|------|------|----------|
+| pageNum | 页码 | false | int | query |
+| pageSize | 每页条数 | false | int | query |
+
+**响应参数**
+
+| 参数名 | 说明 | 类型 |
+|--------|------|------|
+| code | 状态码 | number |
+| msg | 返回消息 | string |
+| data | 用户列表 | array |
+| total | 总数 | number |
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "msg": "请求成功",
+  "data": [
+    {
+      "userId": 1,
+      "userName": "test01",
+      "nickName": "测试用户",
+      "avatar": "/dev-api/profile/upload/image/avatar.jpg",
+      "phoneNumber": "13800138000",
+      "email": "test@example.com",
+      "sex": "0",
+      "status": "0"
+    }
+  ],
+  "total": 1
+}
+```
+
 ## 3. 广告轮播
 
 ### 3.1 查询引导页及主页轮播
@@ -1061,13 +1107,14 @@
 | 接口地址 | `/prod-api/api/friendly_neighborhood/add/comment` |
 | 请求方法 | POST |
 | 请求类型 | application/json |
+| 认证 | 需要Token |
 
 **请求参数**
 
 | 参数名 | 说明 | 必须 | 类型 | 请求类型 |
 |--------|------|------|------|----------|
-| content | 回帖内容 | true | string | query |
-| neighborhoodId | 友邻帖子ID | true | int | query |
+| content | 回帖内容 | true | string | body |
+| neighborhoodId | 友邻帖子ID | true | int | body |
 
 **请求示例**
 ```json
@@ -1261,19 +1308,17 @@
 |------|------|
 | 接口地址 | `/prod-api/api/activity/search` |
 | 请求方法 | POST |
-| 请求类型 | application/json |
+| 请求类型 | application/x-www-form-urlencoded |
 
 **请求参数**
 
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| words | 搜索关键字 | true | string |
+| 参数名 | 说明 | 必须 | 类型 | 请求类型 |
+|--------|------|------|------|----------|
+| words | 搜索关键字 | true | string | query |
 
 **请求示例**
-```json
-{
-  "words": "活动"
-}
+```
+/prod-api/api/activity/search?words=活动
 ```
 
 **响应参数**
@@ -1302,7 +1347,7 @@
 
 | 项目 | 说明 |
 |------|------|
-| 接口地址 | `/prod-api/api/activity/category/list/{id}` |
+| 接口地址 | `/prod-api/api/activity/category/list/:id` |
 | 请求方法 | GET |
 | 请求类型 | application/x-www-form-urlencoded |
 
@@ -1310,9 +1355,9 @@
 
 | 参数名 | 说明 | 必须 | 类型 | 请求类型 |
 |--------|------|------|------|----------|
-| id | 分类id | true | string | path |
-| pageNum | 页码 | false | string | query |
-| pageSize | 每页数量 | false | string | query |
+| id | 分类id | true | int | path |
+| pageNum | 页码 | false | int | query |
+| pageSize | 每页数量 | false | int | query |
 
 **请求示例**
 ```
@@ -1405,7 +1450,7 @@
 |--------|------|------|------|----------|
 | id | 活动id | true | int | path |
 | evaluate | 学习感言 | true | string | body |
-| star | 评分 | true | string | body |
+| star | 评分 | true | int | body |
 
 **请求示例**
 ```json
@@ -1428,6 +1473,7 @@
   "code": 200,
   "msg": "操作成功"
 }
+```
 
 # 绿动未来
 
@@ -2063,357 +2109,25 @@
 }
 ```
 
-# 业务操作
+## 2. 报名记录
 
-## 1. 新闻互动
-
-### 1.1 新闻详情
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/press/news/{id}` |
-| 请求方法 | GET |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 新闻ID | true | int |
-
-**响应参数**
-
-| 参数名 | 说明 | 类型 |
-|--------|------|------|
-| code | 状态码 | number |
-| msg | 返回消息 | string |
-| data | 新闻详情 | object |
-
-### 1.2 新闻点赞
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/press/like/{id}` |
-| 请求方法 | PUT |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 新闻ID | true | int |
-
-**响应示例**
-```json
-{
-  "code": 200,
-  "msg": "操作成功"
-}
-```
-
-### 1.3 发布新闻评论
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/press/comment` |
-| 请求方法 | POST |
-| 请求类型 | application/json |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| newsId | 新闻ID | true | int |
-| content | 评论内容 | true | string |
-| userName | 用户名 | true | string |
-
-**请求示例**
-```json
-{
-  "newsId": 1,
-  "content": "写得真好！",
-  "userName": "张三"
-}
-```
-
-**响应示例**
-```json
-{
-  "code": 200,
-  "msg": "操作成功"
-}
-```
-
-### 1.4 新闻评论列表
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/press/comment/list` |
-| 请求方法 | GET |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| newsId | 新闻ID | true | int |
-| pageNum | 页码 | false | int |
-| pageSize | 每页条数 | false | int |
-
-**响应参数**
-
-| 参数名 | 说明 | 类型 |
-|--------|------|------|
-| code | 状态码 | number |
-| msg | 返回消息 | string |
-| data | 评论列表 | array |
-| total | 总数 | number |
-
-### 1.5 评论点赞
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/press/comment/like/{id}` |
-| 请求方法 | PUT |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 评论ID | true | int |
-
-**响应示例**
-```json
-{
-  "code": 200,
-  "msg": "操作成功"
-}
-```
-
-### 1.6 分类新闻列表
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/press/category/newsList` |
-| 请求方法 | GET |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 分类ID | true | int |
-| pageNum | 页码 | false | int |
-| pageSize | 每页条数 | false | int |
-
-## 2. 公告阅读
-
-### 2.1 公告详情
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/notice/{id}` |
-| 请求方法 | GET |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 公告ID | true | int |
-
-### 2.2 标记公告已读
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/readNotice/{id}` |
-| 请求方法 | PUT |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 公告ID | true | int |
-
-**响应示例**
-```json
-{
-  "code": 200,
-  "msg": "操作成功"
-}
-```
-
-## 3. 友邻详情
-
-### 3.1 友邻帖子详情
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/friendly_neighborhood/{id}` |
-| 请求方法 | GET |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 帖子ID | true | int |
-
-## 4. 活动业务
-
-### 4.1 活动详情
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/activity/{id}` |
-| 请求方法 | GET |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 活动ID | true | int |
-
-### 4.2 热门活动
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/activity/topList` |
-| 请求方法 | GET |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| pageNum | 页码 | false | int |
-| pageSize | 每页条数 | false | int |
-
-### 4.3 活动搜索
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/activity/search` |
-| 请求方法 | GET |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| words | 搜索关键词 | true | string |
-| pageNum | 页码 | false | int |
-| pageSize | 每页条数 | false | int |
-
-### 4.4 分类活动列表
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/activity/category/{id}` |
-| 请求方法 | GET |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 分类ID | true | int |
-| pageNum | 页码 | false | int |
-| pageSize | 每页条数 | false | int |
-
-### 4.5 活动报名
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/registration` |
-| 请求方法 | POST |
-| 请求类型 | application/json |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| activityId | 活动ID | true | int |
-
-**响应示例**
-```json
-{
-  "code": 200,
-  "msg": "操作成功"
-}
-```
-
-### 4.6 活动签到
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/checkin/{id}` |
-| 请求方法 | PUT |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 活动ID | true | int |
-
-**响应示例**
-```json
-{
-  "code": 200,
-  "msg": "操作成功"
-}
-```
-
-### 4.7 活动评价
-
-| 项目 | 说明 |
-|------|------|
-| 接口地址 | `/prod-api/api/registration/comment/{id}` |
-| 请求方法 | PUT |
-| 请求类型 | application/json |
-| 认证 | 需要Token |
-
-**请求参数**
-
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| id | 活动ID | true | int |
-| evaluate | 学习感言 | true | string |
-| star | 评分(1-5) | true | int |
-
-**请求示例**
-```json
-{
-  "evaluate": "活动很有意义，学到了很多",
-  "star": 5
-}
-```
-
-**响应示例**
-```json
-{
-  "code": 200,
-  "msg": "操作成功"
-}
-```
-
-### 4.8 报名记录列表
+### 2.1 报名记录列表
 
 | 项目 | 说明 |
 |------|------|
 | 接口地址 | `/prod-api/api/registration/list` |
 | 请求方法 | GET |
+| 请求类型 | application/x-www-form-urlencoded |
 | 认证 | 需要Token |
 
 **请求参数**
 
-| 参数名 | 说明 | 必须 | 类型 |
-|--------|------|------|------|
-| pageNum | 页码 | false | int |
-| pageSize | 每页条数 | false | int |
-| activityId | 活动ID筛选 | false | string |
-| userId | 用户ID筛选 | false | string |
+| 参数名 | 说明 | 必须 | 类型 | 请求类型 |
+|--------|------|------|------|----------|
+| pageNum | 页码 | false | int | query |
+| pageSize | 每页条数 | false | int | query |
+| activityId | 活动ID筛选 | false | string | query |
+| userId | 用户ID筛选 | false | string | query |
 
 **响应参数**
 
@@ -2445,3 +2159,4 @@
   "total": 1
 }
 ```
+
