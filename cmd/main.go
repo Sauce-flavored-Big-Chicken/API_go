@@ -2,6 +2,7 @@ package main
 
 import (
 	"digital-community/internal/config"
+	"digital-community/internal/handlers"
 	"digital-community/internal/router"
 	"fmt"
 	"log"
@@ -20,6 +21,7 @@ func main() {
 	if err := config.InitDB(cfg.DBPath); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
+	handlers.StartThumbnailWarmup()
 
 	r := router.Setup()
 

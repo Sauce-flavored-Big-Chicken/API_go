@@ -46,12 +46,19 @@ type PressCategory struct {
 type PressNews struct {
 	gorm.Model
 	Title       string    `json:"title" gorm:"column:title"`
+	SubTitle    string    `json:"subTitle" gorm:"column:sub_title"`
 	Content     string    `json:"content" gorm:"column:content;type:text"`
 	ImageUrls   string    `json:"imageUrls" gorm:"column:image_urls"`
 	CategoryId  int       `json:"categoryId" gorm:"column:category_id"`
 	Author      string    `json:"author" gorm:"column:author"`
 	Source      string    `json:"source" gorm:"column:source"`
 	ViewCount   int       `json:"viewCount" gorm:"column:view_count"`
+	LikeNum     int       `json:"likeNum" gorm:"column:like_num"`
+	CommentNum  int       `json:"commentNum" gorm:"column:comment_num"`
+	Type        string    `json:"type" gorm:"column:type"`
+	Top         string    `json:"top" gorm:"column:top"`
+	Hot         string    `json:"hot" gorm:"column:hot"`
+	Tags        string    `json:"tags" gorm:"column:tags"`
 	Status      string    `json:"status" gorm:"column:status"`
 	PublishDate time.Time `json:"publishDate" gorm:"column:publish_date"`
 }
@@ -104,6 +111,7 @@ type Activity struct {
 	Address      string    `json:"address" gorm:"column:address"`
 	TotalCount   int       `json:"totalCount" gorm:"column:total_count"`
 	CurrentCount int       `json:"currentCount" gorm:"column:current_count"`
+	IsTop        string    `json:"isTop" gorm:"column:is_top"`
 	Status       string    `json:"status" gorm:"column:status"`
 	CreateBy     string    `json:"createBy" gorm:"column:create_by"`
 	CreateTime   string    `json:"createTime" gorm:"column:create_time"`
@@ -119,6 +127,7 @@ type Registration struct {
 	Status        string `json:"status" gorm:"column:status"`
 	CheckinStatus string `json:"checkinStatus" gorm:"column:checkin_status"`
 	Comment       string `json:"comment" gorm:"column:comment"`
+	Star          int    `json:"star" gorm:"column:star"`
 	CreateTime    string `json:"createTime" gorm:"column:create_time"`
 }
 
@@ -133,4 +142,66 @@ type Comment struct {
 	NickName   string `json:"nickName" gorm:"column:nick_name"`
 	UserImgUrl string `json:"userImgUrl" gorm:"column:user_img_url"`
 	CreateTime string `json:"createTime" gorm:"column:create_time"`
+}
+
+type PressLikeRecord struct {
+	gorm.Model
+	NewsId int `json:"newsId" gorm:"column:news_id;index:idx_press_like_user_news,unique"`
+	UserId int `json:"userId" gorm:"column:user_id;index:idx_press_like_user_news,unique"`
+}
+
+type CommentLikeRecord struct {
+	gorm.Model
+	CommentId int `json:"commentId" gorm:"column:comment_id;index:idx_comment_like_user_comment,unique"`
+	UserId    int `json:"userId" gorm:"column:user_id;index:idx_comment_like_user_comment,unique"`
+}
+
+type GreenDataCard struct {
+	ID    uint   `json:"id" gorm:"primaryKey"`
+	Icon  string `json:"icon" gorm:"column:icon"`
+	Title string `json:"title" gorm:"column:title"`
+	Num   string `json:"num" gorm:"column:num"`
+	Unit  string `json:"unit" gorm:"column:unit"`
+	Trend string `json:"trend" gorm:"column:trend"`
+	Sort  int    `json:"sort" gorm:"column:sort"`
+}
+
+type GreenQuestion struct {
+	ID           uint   `json:"id" gorm:"primaryKey"`
+	QuestionType string `json:"questionType" gorm:"column:question_type;index:idx_green_question_type_level"`
+	Level        string `json:"level" gorm:"column:level;index:idx_green_question_type_level"`
+	Question     string `json:"question" gorm:"column:question;type:text"`
+	OptionA      string `json:"optionA" gorm:"column:option_a"`
+	OptionB      string `json:"optionB" gorm:"column:option_b"`
+	OptionC      string `json:"optionC" gorm:"column:option_c"`
+	OptionD      string `json:"optionD" gorm:"column:option_d"`
+	OptionE      string `json:"optionE" gorm:"column:option_e"`
+	OptionF      string `json:"optionF" gorm:"column:option_f"`
+	Answer       string `json:"answer" gorm:"column:answer"`
+	Score        int    `json:"score" gorm:"column:score"`
+	Status       string `json:"status" gorm:"column:status"`
+}
+
+type GreenPaper struct {
+	gorm.Model
+	UserId   int    `json:"userId" gorm:"column:user_id;index"`
+	Score    string `json:"score" gorm:"column:score"`
+	RawInput string `json:"rawInput" gorm:"column:raw_input;type:text"`
+}
+
+type GreenPaperAnswer struct {
+	gorm.Model
+	PaperId     uint   `json:"paperId" gorm:"column:paper_id;index"`
+	QuestionId  uint   `json:"questionId" gorm:"column:question_id;index"`
+	UserAnswer  string `json:"userAnswer" gorm:"column:user_answer"`
+	RightAnswer string `json:"rightAnswer" gorm:"column:right_answer"`
+	IsCorrect   string `json:"isCorrect" gorm:"column:is_correct"`
+}
+
+type GreenDataSeries struct {
+	ID      uint   `json:"id" gorm:"primaryKey"`
+	ListKey string `json:"listKey" gorm:"column:list_key;index:idx_green_data_series_key_sort"`
+	Name    string `json:"name" gorm:"column:name"`
+	Data    string `json:"data" gorm:"column:data;type:text"`
+	Sort    int    `json:"sort" gorm:"column:sort;index:idx_green_data_series_key_sort"`
 }

@@ -1,0 +1,16 @@
+{
+  "name": "api-go-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c yellow,cyan \"pnpm dev:api\" \"pnpm dev:web\"",
+    "dev:api": "go run ./cmd/main.go",
+    "dev:web": "pnpm --filter web dev",
+    "lint": "pnpm lint:api && pnpm lint:web",
+    "lint:api": "go vet ./...",
+    "lint:web": "pnpm --filter web lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

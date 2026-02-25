@@ -1,0 +1,137 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #333;
+}
+
+.login-header p {
+  margin: 8px 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.login-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 12px;
+}
+
+.login-tabs button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: none;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.login-tabs button:hover {
+  background: #f5f5f5;
+}
+
+.login-tabs button.active {
+  color: #4a90d9;
+  background: #e8f4ff;
+  font-weight: 600;
+}
+
+.login-error {
+  padding: 12px;
+  margin-bottom: 16px;
+  background: #ffebee;
+  color: #d32f2f;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-form input,
+.login-form select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fff;
+  color: #333;
+  transition: border-color 0.2s;
+}
+
+.login-form input:focus,
+.login-form select:focus {
+  outline: none;
+  border-color: #4a90d9;
+}
+
+.login-form button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4a90d9, #35c9a5);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.login-form button:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.login-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sms-code-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sms-code-row input {
+  flex: 1;
+}
+
+.sms-code-btn {
+  width: 120px !important;
+  padding: 12px 8px !important;
+  margin-top: 0 !important;
+  font-size: 14px !important;
+  background: linear-gradient(135deg, #ff9800, #ff5722) !important;
+}
