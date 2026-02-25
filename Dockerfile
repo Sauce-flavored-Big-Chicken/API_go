@@ -12,19 +12,20 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /out/server ./cmd/main.go
 
 FROM node:22-alpine AS web-builder
 
-WORKDIR /web
+WORKDIR /workspace
 
 RUN corepack enable
 
-COPY web/package.json web/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY web/package.json ./web/package.json
+RUN pnpm install --frozen-lockfile --filter web...
 
-COPY web .
+COPY web ./web
 
 ARG VITE_API_BASE_URL=/
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
-RUN pnpm build
+RUN pnpm --filter web build
 
 FROM alpine:3.21
 
@@ -34,7 +35,7 @@ RUN apk add --no-cache ca-certificates tzdata nginx tini
 
 COPY --from=api-builder /out/server ./server
 COPY --from=api-builder /src/profile ./profile
-COPY --from=web-builder /web/dist /usr/share/nginx/html
+COPY --from=web-builder /workspace/web/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY docker-start.sh /app/docker-start.sh
 
