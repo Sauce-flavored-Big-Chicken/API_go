@@ -15,6 +15,7 @@ FROM node:22-alpine AS web-builder
 WORKDIR /workspace
 
 RUN corepack enable
+RUN corepack prepare pnpm@10.30.2 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY web/package.json ./web/package.json
