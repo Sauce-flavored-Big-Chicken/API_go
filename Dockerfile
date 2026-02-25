@@ -35,7 +35,6 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates tzdata nginx tini
 
 COPY --from=api-builder /out/server ./server
-COPY --from=api-builder /src/profile ./profile
 COPY --from=web-builder /workspace/web/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY docker-start.sh /app/docker-start.sh
