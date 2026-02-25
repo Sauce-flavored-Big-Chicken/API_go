@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字社区 - 数据库管理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .header { background: #fff; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 20px; color: #333; }
+        .header .user-info { color: #666; font-size: 14px; }
+        .container { display: flex; min-height: calc(100vh - 60px); }
+        .sidebar { width: 200px; background: #fff; border-right: 1px solid #e8e8e8; padding: 20px 0; }
+        .sidebar a { display: block; padding: 12px 20px; color: #333; text-decoration: none; cursor: pointer; }
+        .sidebar a:hover, .sidebar a.active { background: #e6f7ff; color: #1890ff; border-right: 3px solid #1890ff; }
+        .main { flex: 1; padding: 20px; overflow: auto; }
+        .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .card h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #fafafa; font-weight: 600; color: #333; }
+        tr:hover { background: #fafafa; }
+        .btn { padding: 6px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 5px; }
+        .btn-primary { background: #1890ff; color: #fff; }
+        .btn-primary:hover { background: #40a9ff; }
+        .btn-success { background: #52c41a; color: #fff; }
+        .btn-success:hover { background: #73d13d; }
+        .btn-danger { background: #ff4d4f; color: #fff; }
+        .btn-danger:hover { background: #ff7875; }
+        .btn-default { background: #fff; border: 1px solid #d9d9d9; color: #333; }
+        .btn-default:hover { border-color: #40a9ff; color: #40a9ff; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #40a9ff; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: #fff; border-radius: 8px; width: 600px; max-height: 80vh; overflow: auto; }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 16px; }
+        .modal-header .close { cursor: pointer; font-size: 20px; color: #999; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; text-align: right; }
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .login-box { background: #fff; padding: 40px; border-radius: 12px; width: 380px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .login-box h2 { text-align: center; margin-bottom: 30px; color: #333; }
+        .search-bar { margin-bottom: 15px; display: flex; gap: 10px; }
+        .search-bar input { flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; }
+        .pagination { margin-top: 15px; display: flex; justify-content: center; gap: 5px; }
+        .pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background: #fff; cursor: pointer; border-radius: 4px; }
+        .pagination button.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .tab-nav { display: flex; border-bottom: 2px solid #e8e8e8; margin-bottom: 20px; }
+        .tab-nav a { padding: 10px 20px; cursor: pointer; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tab-nav a.active { color: #1890ff; border-bottom-color: #1890ff; }
+        .json-editor { font-family: monospace; font-size: 13px; min-height: 200px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="loginPage" class="login-page">
+        <div class="login-box">
+            <h2>数字社区管理</h2>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="loginUser" placeholder="请输入用户名" value="test01">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="loginPwd" placeholder="请输入密码" value="123456">
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="doLogin()">登录</button>
+        </div>
+    </div>
+
+    <div id="mainPage" style="display:none">
+        <div class="header">
+            <h1>数字社区 - 数据库管理</h1>
+            <div class="user-info">
+                <span id="currentUser"></span>
+                <button class="btn btn-default" onclick="doLogout()">退出</button>
+            </div>
+        </div>
+        <div class="container">
+            <div class="sidebar">
+                <a onclick="showPage('user')" class="active" data-page="user">用户管理</a>
+                <a onclick="showPage('news')" data-page="news">新闻管理</a>
+                <a onclick="showPage('notice')" data-page="notice">公告管理</a>
+                <a onclick="showPage('activity')" data-page="activity">活动管理</a>
+                <a onclick="showPage('friendly')" data-page="friendly">友邻圈</a>
+                <a onclick="showPage('rotation')" data-page="rotation">轮播图</a>
+                <a onclick="showPage('category')" data-page="category">新闻分类</a>
+                <a onclick="showPage('sql')" data-page="sql">SQL执行器</a>
+            </div>
+            <div class="main" id="content"></div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">编辑</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveModal()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('token') || '';
+        let currentPage = 'user';
+        let pageData = { user: 1, news: 1, notice: 1, activity: 1, friendly: 1, rotation: 1, category: 1 };
+        let pageSize = 10;
+        let editId = null;
+        let editType = null;
+
+        const api = (method, path, data) => {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (token) opts.headers['Authorization'] = token;
+            if (data) opts.body = JSON.stringify(data);
+            return fetch('http://localhost:8080/prod-api/api' + path, opts)
+                .then(r => r.json())
+                .then(res => {
+                    if (res && Number(res.code) === 401) {
+                        token = '';
+                        localStorage.removeItem('token');
+                        document.getElementById('loginPage').style.display = 'flex';
+                        document.getElementById('mainPage').style.display = 'none';
+                        throw new Error('登录已失效，请重新登录');
+                    }
+                    return res;
+                });
+        };
+
+        async function doLogin() {
+            const user = document.getElementById('loginUser').value;
+            const pwd = document.getElementById('loginPwd').value;
+            const res = await api('POST', '/login', { userName: user, passWord: pwd });
+            if (res.token) {
+                token = res.token;
+                localStorage.setItem('token', token);
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainPage').style.display = 'block';
+                document.getElementById('currentUser').textContent = user + ' ';
+                showPage('user');
+            } else {
+                alert(res.msg || '登录失败');
+            }
+        }
+
+        function doLogout() {
+            token = '';
+            localStorage.removeItem('token');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('mainPage').style.display = 'none';
+        }
+
+        async function showPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+            const content = document.getElementById('content');
+            
+            if (page === 'sql') {
+                content.innerHTML = `
+                    <div class="card">
+                        <h2>SQL执行器</h2>
+                        <div class="form-group">
+                            <textarea id="sqlInput" class="json-editor" placeholder="输入SQL语句..." rows="8"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="runSql()">执行</button>
+                        <button class="btn btn-default" onclick="document.getElementById('sqlInput').value=''">清空</button>
+                        <div id="sqlResult" style="margin-top:15px"></div>
+                    </div>
+                `;
+                return;
+            }
+
+            const titles = { user: '用户管理', news: '新闻管理', notice: '公告管理', activity: '活动管理', friendly: '友邻圈', rotation: '轮播图', category: '新闻分类' };
+            content.innerHTML = `<div class="card"><h2>${titles[page]}</h2><div class="search-bar"><input type="text" id="searchInput" placeholder="搜索..."><button class="btn btn-primary" onclick="loadData()">搜索</button><button class="btn btn-success" onclick="openEdit()">新增</button></div><div id="tableContainer"></div><div class="pagination" id="pagination"></div></div>`;
+            loadData();
+        }
+
+        async function loadData() {
+            const p = pageData[currentPage] || 1;
+            const search = document.getElementById('searchInput')?.value || '';
+            let res, data = [], total = 0;
+
+            try {
+                switch (currentPage) {
+                    case 'user':
+                        res = await api('GET', '/user/getUserInfo', null);
+                        data = res.data ? [res.data] : [];
+                        total = data.length;
+                        break;
+                    case 'news':
+                        res = await api('GET', `/press/newsList?pageNum=${p}&pageSize=${pageSize}`);
+                        data = res.data?.rows || [];
+                        total = res.data?.total || 0;
+                        break;
+                    case 'notice':
+                        res = await api('GET', `/notice/list?pageNum=${p}&pageSize=${pageSize}`);
+                        data = res.data?.rows || [];
+                        total = res.data?.total || 0;
+                        break;
+                    case 'activity':
+                        res = await api('GET', `/activity/List?pageNum=${p}&pageSize=${pageSize}`);
+                        data = res.data?.rows || [];
+                        total = res.data?.total || 0;
+                        break;
+                    case 'friendly':
+                        res = await api('GET', `/friendly_neighborhood/list?pageNum=${p}&pageSize=${pageSize}`);
+                        data = res.data?.rows || [];
+                        total = res.data?.total || 0;
+                        break;
+                    case 'rotation':
+                        res = await api('GET', `/rotation/list?pageNum=${p}&pageSize=${pageSize}`);
+                        data = res.data?.rows || [];
+                        total = res.data?.total || 0;
+                        break;
+                    case 'category':
+                        res = await api('GET', '/press/category/list');
+                        data = res.data || [];
+                        total = data.length;
+                        break;
+                }
+            } catch(e) { console.error(e); }
+
+            renderTable(data);
+            renderPagination(total, p);
+        }
+
+        function renderTable(data) {
+            const container = document.getElementById('tableContainer');
+            if (!data.length) { container.innerHTML = '<p style="text-align:center;color:#999;padding:40px">暂无数据</p>'; return; }
+
+            let html = '<table><thead><tr>';
+            const cols = {
+                user: ['ID', '用户名', '昵称', '手机', '邮箱', '头像', '操作'],
+                news: ['ID', '标题', '分类ID', '作者', '来源', '阅读数', '操作'],
+                notice: ['ID', '标题', '状态', '内容', '发布时间', '操作'],
+                activity: ['ID', '标题', '分类', '地址', '开始时间', '人数', '操作'],
+                friendly: ['ID', '用户ID', '昵称', '内容', '评论数', '点赞数', '操作'],
+                rotation: ['ID', '标题', '类型', '图片', '操作'],
+                category: ['ID', '名称', '排序', '状态', '操作']
+            };
+            cols[currentPage].forEach(c => html += `<th>${c}</th>`);
+            html += '</tr></thead><tbody>';
+
+            data.forEach(row => {
+                html += '<tr>';
+                switch (currentPage) {
+                    case 'user':
+                        html += `<td>${row.userId||row.ID}</td><td>${row.userName||''}</td><td>${row.nickName||''}</td><td>${row.phonenumber||row.phone||''}</td><td>${row.email||''}</td><td>${row.avatar||''}</td>`;
+                        break;
+                    case 'news':
+                        html += `<td>${row.id||row.ID}</td><td>${row.title||''}</td><td>${row.categoryId||''}</td><td>${row.author||''}</td><td>${row.source||''}</td><td>${row.readNum||row.viewCount||0}</td>`;
+                        break;
+                    case 'notice':
+                        html += `<td>${row.id||row.ID}</td><td>${row.noticeTitle||row.title||''}</td><td>${row.noticeStatus||''}</td><td>${(row.noticeContent||row.contentNotice||'').substring(0,30)}</td><td>${row.createTime||row.publishDate||''}</td>`;
+                        break;
+                    case 'activity':
+                        html += `<td>${row.id||row.ID}</td><td>${row.title||''}</td><td>${row.category||row.categoryId||''}</td><td>${row.address||''}</td><td>${row.startDate||''}</td><td>${row.signUpNum||row.currentCount||0}/${row.maxNum||row.totalCount||0}</td>`;
+                        break;
+                    case 'friendly':
+                        html += `<td>${row.id||row.ID}</td><td>${row.userId||''}</td><td>${row.publishName||row.nickName||''}</td><td>${(row.publishContent||row.content||'').substring(0,30)}</td><td>${row.commentNum||0}</td><td>${row.likeNum||0}</td>`;
+                        break;
+                    case 'rotation':
+                        html += `<td>${row.id||row.ID}</td><td>${row.title||row.advImg||''}</td><td>${row.type||''}</td><td>${row.picPath||row.advImg||''}</td>`;
+                        break;
+                    case 'category':
+                        html += `<td>${row.id||row.ID}</td><td>${row.name||''}</td><td>${row.sort||''}</td><td>${row.status||''}</td>`;
+                        break;
+                }
+                const id = row.id || row.ID || row.userId;
+                html += `<td><button class="btn btn-default" onclick="openEdit(${id})">编辑</button><button class="btn btn-danger" onclick="deleteItem(${id})">删除</button></td></tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderPagination(total, current) {
+            const pages = Math.ceil(total / pageSize);
+            let html = `<button ${current===1?'disabled':''} onclick="goPage(${current-1})">上一页</button>`;
+            for (let i = 1; i <= pages && i <= 5; i++) {
+                html += `<button class="${i===current?'active':''}" onclick="goPage(${i})">${i}</button>`;
+            }
+            html += `<button ${current>=pages?'disabled':''} onclick="goPage(${current+1})">下一页</button>`;
+            document.getElementById('pagination').innerHTML = html;
+        }
+
+        function goPage(p) {
+            pageData[currentPage] = p;
+            loadData();
+        }
+
+        function openEdit(id) {
+            editId = id;
+            editType = currentPage;
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            
+            title.textContent = id ? '编辑' : '新增';
+            
+            let fields = '';
+            switch (currentPage) {
+                case 'user':
+                    fields = `
+                        <div class="form-group"><label>用户名</label><input type="text" id="field_userName"></div>
+                        <div class="form-group"><label>密码</label><input type="text" id="field_passWord"></div>
+                        <div class="form-group"><label>昵称</label><input type="text" id="field_nickName"></div>
+                        <div class="form-group"><label>手机</label><input type="text" id="field_phonenumber"></div>
+                        <div class="form-group"><label>邮箱</label><input type="text" id="field_email"></div>
+                        <div class="form-group"><label>头像</label><input type="text" id="field_avatar"></div>
+                        <div class="form-group"><label>性别</label><select id="field_sex"><option value="0">女</option><option value="1">男</option></select></div>
+                        <div class="form-group"><label>地址</label><input type="text" id="field_address"></div>
+                        <div class="form-group"><label>简介</label><textarea id="field_introduction" rows="3"></textarea></div>
+                    `;
+                    break;
+                case 'news':
+                    fields = `
+                        <div class="form-group"><label>标题</label><input type="text" id="field_title"></div>
+                        <div class="form-group"><label>内容</label><textarea id="field_content" rows="5"></textarea></div>
+                        <div class="form-group"><label>分类ID</label><input type="number" id="field_categoryId"></div>
+                        <div class="form-group"><label>作者</label><input type="text" id="field_author"></div>
+                        <div class="form-group"><label>来源</label><input type="text" id="field_source"></div>
+                        <div class="form-group"><label>封面</label><input type="text" id="field_cover"></div>
+                    `;
+                    break;
+                case 'notice':
+                    fields = `
+                        <div class="form-group"><label>标题</label><input type="text" id="field_noticeTitle"></div>
+                        <div class="form-group"><label>内容</label><textarea id="field_noticeContent" rows="5"></textarea></div>
+                        <div class="form-group"><label>状态</label><select id="field_noticeStatus"><option value="0">未发布</option><option value="1">已发布</option></select></div>
+                    `;
+                    break;
+                case 'activity':
+                    fields = `
+                        <div class="form-group"><label>标题</label><input type="text" id="field_title"></div>
+                        <div class="form-group"><label>内容</label><textarea id="field_content" rows="5"></textarea></div>
+                        <div class="form-group"><label>分类ID</label><input type="number" id="field_categoryId"></div>
+                        <div class="form-group"><label>地址</label><input type="text" id="field_address"></div>
+                        <div class="form-group"><label>开始时间</label><input type="datetime-local" id="field_startDate"></div>
+                        <div class="form-group"><label>结束时间</label><input type="datetime-local" id="field_endDate"></div>
+                        <div class="form-group"><label>总人数</label><input type="number" id="field_totalCount"></div>
+                        <div class="form-group"><label>图片</label><input type="text" id="field_picPath"></div>
+                    `;
+                    break;
+                case 'friendly':
+                    fields = `
+                        <div class="form-group"><label>用户ID</label><input type="number" id="field_userId"></div>
+                        <div class="form-group"><label>昵称</label><input type="text" id="field_nickName"></div>
+                        <div class="form-group"><label>内容</label><textarea id="field_content" rows="4"></textarea></div>
+                        <div class="form-group"><label>图片</label><input type="text" id="field_imgUrl"></div>
+                        <div class="form-group"><label>头像</label><input type="text" id="field_userImgUrl"></div>
+                    `;
+                    break;
+                case 'rotation':
+                    fields = `
+                        <div class="form-group"><label>标题</label><input type="text" id="field_title"></div>
+                        <div class="form-group"><label>图片</label><input type="text" id="field_picPath"></div>
+                        <div class="form-group"><label>类型</label><input type="number" id="field_type"></div>
+                        <div class="form-group"><label>链接</label><input type="text" id="field_link"></div>
+                    `;
+                    break;
+                case 'category':
+                    fields = `
+                        <div class="form-group"><label>名称</label><input type="text" id="field_name"></div>
+                        <div class="form-group"><label>排序</label><input type="number" id="field_sort"></div>
+                        <div class="form-group"><label>状态</label><select id="field_status"><option value="0">正常</option><option value="1">禁用</option></select></div>
+                    `;
+                    break;
+            }
+            body.innerHTML = fields;
+            
+            if (id) {
+                loadEditData(id);
+            }
+            modal.classList.add('show');
+        }
+
+        async function loadEditData(id) {
+            let res, data = {};
+            try {
+                switch (currentPage) {
+                    case 'user': res = await api('GET', '/user/getUserInfo'); data = res.data || {}; break;
+                    case 'news': res = await api('GET', `/press/news/${id}`); data = res.data || {}; break;
+                    case 'notice': res = await api('GET', `/notice/${id}`); data = res.data || {}; break;
+                    case 'activity': res = await api('GET', `/activity/${id}`); data = res.data || {}; break;
+                    case 'friendly': res = await api('GET', `/friendly_neighborhood/${id}`); data = res.data || {}; break;
+                    case 'rotation':
+                        const r = await api('GET', `/rotation/list?pageNum=1&pageSize=100`);
+                        data = (r.data?.rows || []).find(x => (x.id || x.ID) == id) || {};
+                        break;
+                    case 'category':
+                        const c = await api('GET', '/press/category/list');
+                        data = (c.data || []).find(x => (x.id || x.ID) == id) || {};
+                        break;
+                }
+            } catch(e) { console.error(e); }
+
+            const fill = (id, val) => { const el = document.getElementById('field_'+id); if(el) el.value = val || ''; };
+            
+            setTimeout(() => {
+                if (currentPage === 'user') {
+                    fill('userName', data.userName); fill('nickName', data.nickName); fill('phonenumber', data.phonenumber || data.phone);
+                    fill('email', data.email); fill('avatar', data.avatar); fill('sex', data.sex);
+                    fill('address', data.address); fill('introduction', data.introduction);
+                } else if (currentPage === 'news') {
+                    fill('title', data.title); fill('content', data.content); fill('categoryId', data.categoryId);
+                    fill('author', data.author); fill('source', data.source); fill('cover', data.cover || data.imageUrls);
+                } else if (currentPage === 'notice') {
+                    fill('noticeTitle', data.noticeTitle || data.title); fill('noticeContent', data.noticeContent || data.contentNotice);
+                    fill('noticeStatus', data.noticeStatus);
+                } else if (currentPage === 'activity') {
+                    fill('title', data.title); fill('content', data.content); fill('categoryId', data.categoryId);
+                    fill('address', data.address); fill('totalCount', data.maxNum || data.totalCount);
+                    fill('picPath', data.picPath);
+                    const sd = data.startDate ? data.startDate.replace(' ','T').substring(0,16) : '';
+                    const ed = data.endDate ? data.endDate.replace(' ','T').substring(0,16) : '';
+                    fill('startDate', sd); fill('endDate', ed);
+                } else if (currentPage === 'friendly') {
+                    fill('userId', data.userId); fill('nickName', data.publishName || data.nickName);
+                    fill('content', data.publishContent || data.content); fill('imgUrl', data.imgUrl);
+                    fill('userImgUrl', data.userImgUrl);
+                } else if (currentPage === 'rotation') {
+                    fill('title', data.title); fill('picPath', data.picPath || data.advImg); fill('type', data.type);
+                    fill('link', data.link);
+                } else if (currentPage === 'category') {
+                    fill('name', data.name); fill('sort', data.sort); fill('status', data.status);
+                }
+            }, 100);
+        }
+
+        async function saveModal() {
+            const getVal = id => document.getElementById('field_'+id)?.value || '';
+            
+            let data = {}, method = 'POST', path = '';
+            
+            switch (currentPage) {
+                case 'user':
+                    data = { nickName: getVal('nickName'), phonenumber: getVal('phonenumber'), email: getVal('email'), avatar: getVal('avatar'), sex: getVal('sex'), address: getVal('address'), introduction: getVal('introduction') };
+                    if (getVal('passWord')) data.passWord = getVal('passWord');
+                    method = 'PUT'; path = '/user/updateUserInfo';
+                    break;
+                case 'news':
+                    data = { title: getVal('title'), content: getVal('content'), categoryId: getVal('categoryId'), author: getVal('author'), source: getVal('source'), imageUrls: getVal('cover') };
+                    break;
+                case 'notice':
+                    data = { title: getVal('noticeTitle'), noticeContent: getVal('noticeContent'), noticeStatus: getVal('noticeStatus') };
+                    break;
+                case 'activity':
+                    data = { title: getVal('title'), content: getVal('content'), categoryId: getVal('categoryId'), address: getVal('address'), totalCount: getVal('totalCount'), picPath: getVal('picPath'), startDate: getVal('startDate'), endDate: getVal('endDate') };
+                    break;
+                case 'friendly':
+                    data = { userId: getVal('userId'), nickName: getVal('nickName'), content: getVal('content'), imgUrl: getVal('imgUrl'), userImgUrl: getVal('userImgUrl') };
+                    break;
+                case 'rotation':
+                    data = { title: getVal('title'), picPath: getVal('picPath'), type: getVal('type'), link: getVal('link') };
+                    break;
+                case 'category':
+                    data = { name: getVal('name'), sort: getVal('sort'), status: getVal('status') };
+                    break;
+            }
+
+            try {
+                const res = await api(method, path, data);
+                alert(res.msg || '保存成功');
+                closeModal();
+                loadData();
+            } catch(e) {
+                alert('保存失败: ' + e.message);
+            }
+        }
+
+        async function deleteItem(id) {
+            if (!confirm('确定删除？')) return;
+            alert('删除功能需后端支持，当前仅演示');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        async function runSql() {
+            const sql = document.getElementById('sqlInput').value;
+            document.getElementById('sqlResult').innerHTML = '<p style="color:#666">SQL执行器仅供演示，后端未开放直接SQL接口</p>';
+        }
+
+        async function init() {
+            if (!token) {
+                return;
+            }
+            try {
+                const res = await api('GET', '/user/getUserInfo');
+                if (res && Number(res.code) === 200) {
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainPage').style.display = 'block';
+                    document.getElementById('currentUser').textContent = (res.data?.userName || '已登录用户') + ' ';
+                    showPage('user');
+                }
+            } catch (e) {
+                token = '';
+                localStorage.removeItem('token');
+                document.getElementById('loginPage').style.display = 'flex';
+                document.getElementById('mainPage').style.display = 'none';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
