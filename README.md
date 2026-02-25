@@ -76,3 +76,127 @@ go build -o server ./cmd/main.go
 ## 许可证
 
 MIT
+
+## 部署指南
+
+### 本地部署
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/Sauce-flavored-Big-Chicken/API_go.git
+cd API_go
+
+# 2. 安装依赖
+go mod tidy
+
+# 3. 编译
+go build -o server ./cmd/main.go
+
+# 4. 运行
+./server
+```
+
+### Docker 部署
+
+创建 `Dockerfile`:
+
+```dockerfile
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN go build -o server ./cmd/main.go
+
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/server .
+COPY --from=builder /app/admin.html .
+
+EXPOSE 8080
+CMD ["./server"]
+```
+
+构建运行:
+
+```bash
+docker build -t digital-community .
+docker run -d -p 8080:8080 -v $(pwd)/data.db:/app/data.db digital-community
+```
+
+### 生产环境部署
+
+```bash
+# 使用 Systemd 服务
+sudo nano /etc/systemd/system/digital-community.service
+```
+
+```ini
+[Unit]
+Description=Digital Community API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/digital-community
+ExecStart=/opt/digital-community/server
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+# 启用服务
+sudo systemctl daemon-reload
+sudo systemctl enable digital-community
+sudo systemctl start digital-community
+```
+
+### Nginx 反向代理配置
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        root /var/www/digital-community;
+        index admin.html;
+        try_files $uri $uri/ /admin.html;
+    }
+
+    location /prod-api/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /profile/ {
+        proxy_pass http://127.0.0.1:8080;
+    }
+}
+```
+
+### 生产环境建议
+
+1. **安全**
+   - 修改默认 JWT_SECRET
+   - 使用 HTTPS
+   - 配置防火墙规则
+
+2. **数据库**
+   - 定期备份 `data.db`
+   - 生产环境可迁移到 MySQL/PostgreSQL（修改 gorm.io/driver）
+
+3. **监控**
+   - 配置日志轮转
+   - 使用 PM2 或 Supervisor 管理进程
+
+4. **性能**
+   - 根据需要调整 SQLite 配置
+   - 考虑使用缓存
