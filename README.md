@@ -98,33 +98,58 @@ go build -o server ./cmd/main.go
 
 ### Docker 部署
 
-创建 `Dockerfile`:
+项目已内置单容器配置：
 
-```dockerfile
-FROM golang:1.21-alpine AS builder
+- `Dockerfile`：一个容器同时运行 Go API + Nginx 前端
+- `docker-compose.yml`：一键启动
 
-WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-
-COPY . .
-RUN go build -o server ./cmd/main.go
-
-FROM alpine:latest
-WORKDIR /app
-COPY --from=builder /app/server .
-COPY --from=builder /app/admin.html .
-
-EXPOSE 8080
-CMD ["./server"]
-```
-
-构建运行:
+一键启动：
 
 ```bash
-docker build -t digital-community .
-docker run -d -p 8080:8080 -v $(pwd)/data.db:/app/data.db digital-community
+docker compose up --build -d
 ```
+
+访问地址：
+
+- 前端：`http://localhost:3000`
+- API（经同域反代）：`http://localhost:3000/prod-api/...`
+
+停止并清理：
+
+```bash
+docker compose down
+```
+
+若需要清理数据库和上传文件卷：
+
+```bash
+docker compose down -v
+```
+
+### GitHub Actions 自动构建并推送 Docker Hub
+
+已内置工作流：`.github/workflows/docker-publish.yml`
+
+触发条件：
+
+- push 到 `main` / `master`
+- push `v*` 标签（如 `v1.0.0`）
+- 手动触发 `workflow_dispatch`
+
+请在 GitHub 仓库配置：
+
+- `Secrets`
+  - `DOCKERHUB_USERNAME`: Docker Hub 用户名
+  - `DOCKERHUB_TOKEN`: Docker Hub Access Token
+- `Variables`（可选）
+  - `DOCKERHUB_REPOSITORY`: Docker Hub 仓库名（不填则默认用 `api-go`）
+
+推送后镜像标签包含：
+
+- 分支标签（如 `main`）
+- 版本标签（如 `v1.0.0`）
+- `sha-<commit>`
+- 默认分支额外推送 `latest`
 
 ### 生产环境部署
 

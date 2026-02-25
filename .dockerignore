@@ -1,0 +1,10 @@
+.git
+.gitignore
+**/.DS_Store
+**/node_modules
+main
+server
+data.db
+profile/upload
+docker-data
+*.log

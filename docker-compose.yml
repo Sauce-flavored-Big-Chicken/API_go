@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /
+    container_name: digital-community-app
+    environment:
+      SERVER_PORT: "8080"
+      DB_PATH: /app/data/data.db
+      JWT_SECRET: digital-community-secret-key-2024
+    ports:
+      - "3000:80"
+    volumes:
+      - ./docker-data/data:/app/data
+      - ./docker-data/upload:/app/profile/upload
+    restart: unless-stopped
