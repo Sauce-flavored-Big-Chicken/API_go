@@ -8,7 +8,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /out/server ./cmd/main.go
+RUN CGO_CFLAGS="-D_LARGEFILE64_SOURCE" CGO_ENABLED=1 go build -o /out/server ./cmd/main.go
 
 FROM node:22-alpine AS web-builder
 
