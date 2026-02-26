@@ -61,7 +61,106 @@ func InitDB(dbPath string) error {
 		return fmt.Errorf("failed to seed business data: %w", err)
 	}
 
+	if err := normalizeGreenDataSeriesAndEnsureUniqueIndexes(); err != nil {
+		return fmt.Errorf("failed to normalize green data series: %w", err)
+	}
+
 	log.Println("Database initialized successfully")
+	return nil
+}
+
+func normalizeGreenDataSeriesAndEnsureUniqueIndexes() error {
+	var rows []models.GreenDataSeries
+	if err := DB.Order("id asc").Find(&rows).Error; err != nil {
+		return err
+	}
+
+	usedListKeys := make(map[string]struct{}, len(rows))
+	usedListNums := make(map[int]struct{}, len(rows))
+	usedNames := make(map[string]struct{}, len(rows))
+
+	claimListNum := func(start int) int {
+		if start < 1 {
+			start = 1
+		}
+		for n := start; ; n++ {
+			if _, exists := usedListNums[n]; !exists {
+				usedListNums[n] = struct{}{}
+				return n
+			}
+		}
+	}
+
+	parseListNum := func(listKey string) (int, bool) {
+		if !strings.HasPrefix(listKey, "list_") {
+			return 0, false
+		}
+		n, err := strconv.Atoi(strings.TrimPrefix(listKey, "list_"))
+		if err != nil || n <= 0 {
+			return 0, false
+		}
+		return n, true
+	}
+
+	for _, row := range rows {
+		rawListKey := strings.TrimSpace(row.ListKey)
+		nextListNum := 0
+		if n, ok := parseListNum(rawListKey); ok {
+			if _, exists := usedListKeys[rawListKey]; !exists {
+				nextListNum = claimListNum(n)
+			} else {
+				nextListNum = claimListNum(n + 1)
+			}
+		} else {
+			nextListNum = claimListNum(1)
+		}
+		nextListKey := fmt.Sprintf("list_%d", nextListNum)
+
+		nextName := strings.TrimSpace(row.Name)
+		if nextName == "" {
+			nextName = nextListKey
+		}
+		if _, exists := usedNames[nextName]; exists {
+			if _, canUseListKey := usedNames[nextListKey]; !canUseListKey {
+				nextName = nextListKey
+			} else {
+				base := nextName
+				i := 2
+				for {
+					candidate := fmt.Sprintf("%s_%d", base, i)
+					if _, used := usedNames[candidate]; !used {
+						nextName = candidate
+						break
+					}
+					i++
+				}
+			}
+		}
+
+		updates := map[string]interface{}{}
+		if row.ListKey != nextListKey {
+			updates["list_key"] = nextListKey
+		}
+		if row.Name != nextName {
+			updates["name"] = nextName
+		}
+		if len(updates) > 0 {
+			if err := DB.Model(&models.GreenDataSeries{}).Where("id = ?", row.ID).Updates(updates).Error; err != nil {
+				return err
+			}
+		}
+
+		usedListKeys[nextListKey] = struct{}{}
+		usedNames[nextName] = struct{}{}
+	}
+
+	if err := DB.Exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_green_data_series_list_key_unique ON green_data_series(list_key)").Error; err != nil {
+		return err
+	}
+	if err := DB.Exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_green_data_series_name_unique ON green_data_series(name)").Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 

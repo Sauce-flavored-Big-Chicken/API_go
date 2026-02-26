@@ -2523,7 +2523,7 @@ func GreenDataSeriesByKey(c *gin.Context) {
 
 func GreenDataSeriesList(c *gin.Context) {
 	var list []models.GreenDataSeries
-	if err := config.DB.Order("list_key asc").Find(&list).Error; err != nil {
+	if err := config.DB.Order("CAST(SUBSTR(list_key, 6) AS INTEGER) asc, id asc").Find(&list).Error; err != nil {
 		c.JSON(http.StatusOK, Response{Code: 500, Msg: "查询失败"})
 		return
 	}
@@ -2543,28 +2543,49 @@ func GreenDataSeriesCreate(c *gin.Context) {
 		return
 	}
 
-	var maxNum int
-	rows, _ := config.DB.Raw("SELECT list_key FROM green_data_series WHERE list_key LIKE 'list_%' ORDER BY CAST(SUBSTR(list_key, 5) AS INTEGER) DESC LIMIT 1").Rows()
-	if rows.Next() {
-		var key string
-		rows.Scan(&key)
-		fmt.Sscanf(key, "list_%d", &maxNum)
+	for i := 0; i < 5; i++ {
+		var maxNum int
+		rows, err := config.DB.Raw("SELECT list_key FROM green_data_series WHERE list_key LIKE 'list_%' ORDER BY CAST(SUBSTR(list_key, 5) AS INTEGER) DESC LIMIT 1").Rows()
+		if err != nil {
+			c.JSON(http.StatusOK, Response{Code: 500, Msg: "创建失败"})
+			return
+		}
+		if rows.Next() {
+			var key string
+			if scanErr := rows.Scan(&key); scanErr == nil {
+				_, _ = fmt.Sscanf(key, "list_%d", &maxNum)
+			}
+		}
 		rows.Close()
-	}
 
-	newListKey := fmt.Sprintf("list_%d", maxNum+1)
+		newListKey := fmt.Sprintf("list_%d", maxNum+1)
+		record := models.GreenDataSeries{
+			ListKey: newListKey,
+			Name:    newListKey,
+			Data:    req.Data,
+			Sort:    maxNum + 1,
+		}
+		if err := config.DB.Create(&record).Error; err != nil {
+			if isUniqueConstraintError(err) {
+				continue
+			}
+			c.JSON(http.StatusOK, Response{Code: 500, Msg: "创建失败"})
+			return
+		}
 
-	record := models.GreenDataSeries{
-		ListKey: newListKey,
-		Name:    newListKey,
-		Data:    req.Data,
-		Sort:    maxNum + 1,
-	}
-	if err := config.DB.Create(&record).Error; err != nil {
-		c.JSON(http.StatusOK, Response{Code: 500, Msg: "创建失败"})
+		c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": gin.H{"listKey": newListKey}})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": gin.H{"listKey": newListKey}})
+
+	c.JSON(http.StatusOK, Response{Code: 500, Msg: "创建失败，请重试"})
+}
+
+func isUniqueConstraintError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "unique constraint") || strings.Contains(msg, "duplic")
 }
 
 func GreenDataSeriesUpdate(c *gin.Context) {
