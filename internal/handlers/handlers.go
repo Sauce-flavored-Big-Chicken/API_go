@@ -2545,7 +2545,7 @@ func GreenDataSeriesCreate(c *gin.Context) {
 
 	for i := 0; i < 5; i++ {
 		var maxNum int
-		rows, err := config.DB.Raw("SELECT list_key FROM green_data_series WHERE list_key LIKE 'list_%' ORDER BY CAST(SUBSTR(list_key, 5) AS INTEGER) DESC LIMIT 1").Rows()
+		rows, err := config.DB.Raw("SELECT list_key FROM green_data_series WHERE list_key LIKE 'list_%' ORDER BY CAST(SUBSTR(list_key, 6) AS INTEGER) DESC LIMIT 1").Rows()
 		if err != nil {
 			c.JSON(http.StatusOK, Response{Code: 500, Msg: "创建失败"})
 			return
