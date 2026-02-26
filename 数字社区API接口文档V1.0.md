@@ -4,7 +4,7 @@
 
 ## 1. 服务器地址
 
-> **待补充**：文档未给出具体服务器地址（host:port）
+> https://api.pkits.cc
 
 部分接口需要先登录获取授权 TOKEN 才能调用，具体接口在每个章节中说明。
 
@@ -1900,7 +1900,7 @@
 
 | 项目 | 说明 |
 |------|------|
-| 接口地址 | `/prod-api/api/question/questionList/{questionType}/{level}` |
+| 接口地址 | `/prod-api/api/question/questionList/{id}/{level}` |
 | 请求方法 | GET |
 | 请求类型 | application/x-www-form-urlencoded |
 
@@ -1908,7 +1908,7 @@
 
 | 参数名 | 说明 | 必须 | 类型 |
 |--------|------|------|------|
-| questionType | 题型(1=选择题,4=判断题) | true | string |
+| id | 题型(1=选择题,4=判断题) | true | string |
 | level | 难度(1=简单,2=中等,3=困难) | true | string |
 
 **响应参数**
@@ -2159,4 +2159,3 @@
   "total": 1
 }
 ```
-
